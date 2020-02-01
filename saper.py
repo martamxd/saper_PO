@@ -2,9 +2,29 @@ import random
 import time
 import copy
 
+def reset():
+    #Macierz poczatkowa
+    b = [[0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0]]
 
-#Macierz poczatkowa
-b = [[0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0]]
+    for i in range(0,10):
+        placeBomb(b)
+
+    for r in range (0,9):
+        for c in range(0,9):
+            value = loc(r,c,b)
+            if value == '*':
+                updateValues(r,c,b)
+
+    #Sets the variable k to a grid of blank spaces, because nothing is yet known about the grid.
+    k = [[' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ']]
+
+    printBoard(k)
+
+    play(b,k)
+
+#Gets the value of a coordinate on the grid.
+def loc(r,c,b):
+    return b[r][c]
 
 #Places a bomb in a random location.
 def placeBomb(b):
@@ -18,13 +38,7 @@ def placeBomb(b):
     else:
         placeBomb(b)
 
-for i in range(0,10):
-    placeBomb(b)
-
-#Gets the value of a coordinate on the grid.
-def loc(r,c,b):
-    return b[r][c]
-
+#Adds 1 to all of the squares around a bomb.        
 def updateValues(rn,c,b):
 
     #row above
@@ -68,21 +82,85 @@ def updateValues(rn,c,b):
             if not r[c+1] == "*":
                 r[c+1] +=1
 
-for r in range (0,9):
-    for c in range(0,9):
-        value = loc(r,c,b)
-        if value == '*':
-            updateValues(r,c,b)
+def zeroProcedure(r, c, k, b):
+
+    #Row above
+    if r-1 > -1:
+        row = k[r-1]
+        if c-1 > -1: row[c-1] = loc(r-1, c-1, b)
+        row[c] = loc(r-1, c, b)
+        if 9 > c+1: row[c+1] = loc(r-1, c+1, b)
+
+    #Same row
+    row = k[r]
+    if c-1 > -1: row[c-1] = loc(r, c-1, b)
+    if 9 > c+1: row[c+1] = loc(r, c+1, b)
+
+    #Row below
+    if 9 > r+1:
+        row = k[r+1]
+        if c-1 > -1: row[c-1] = loc(r+1, c-1, b)
+        row[c] = loc(r+1, c, b)
+        if 9 > c+1: row[c+1] = loc(r+1, c+1, b)
+
+#Checks known grid for 0s.
+def checkZeros(k, b, r, c):
+    oldGrid = copy.deepcopy(k)
+    zeroProcedure(r, c, k, b)
+    if oldGrid == k:
+        return
+    while True:
+        oldGrid = copy.deepcopy(k)
+        for x in range (9):
+            for y in range (9):
+                if loc(x, y, k) == 0:
+                    zeroProcedure(x, y, k, b)
+        if oldGrid == k:
+            return
 
 #Prints the given board.
 def printBoard(b):
     print('    A   B   C   D   E   F   G   H   I')
     print('  ╔═══╦═══╦═══╦═══╦═══╦═══╦═══╦═══╦═══╗')
     for r in range (0, 9):
-        print(r,'║' ,loc(r,0,b),'║',loc(r,1,b),'║',loc(r,2,b),'║',loc(r,3,b),'║',loc(r,4,b),'║',loc(r,5,b),'║',loc(r,6,b),'║',loc(r,7,b),'║',loc(r,8,b),'║')
+        print(r,'║' ,loc(r,0,b),'║',loc(r,1,b),'║',loc(r,2,b),'║',loc(r,3,b),'║',loc(r,4,b),
+        '║',loc(r,5,b),'║',loc(r,6,b),'║',loc(r,7,b),'║',loc(r,8,b),'║')
         if not r == 8:
             print('  ╠═══╬═══╬═══╬═══╬═══╬═══╬═══╬═══╬═══╣')
     print('  ╚═══╩═══╩═══╩═══╩═══╩═══╩═══╩═══╩═══╝')
 
+#The player chooses a location.
+def choose(b,k):
+    letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h' ,'i']
+    numbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8']
+    while True:
+        chosen = input('Wybierz nr kolumny i wiersza (np.B3): ').lower()
+        if len(chosen) == 2 and chosen[0] in letters and chosen[1] in numbers: return (ord(chosen[0]))-97, int(chosen[1])
+    else: choose(b,k)
 
-printBoard(b)
+#The majority of the gameplay happens here.
+def play(b,k):
+    c,r = choose(b,k)
+    v =loc(r,c,b)
+    if v == '*':
+        printBoard(b)
+        print("You lose:(")
+        quit()
+    k[r][c] = v
+    #Runs checkZeros() if that value is a 0.
+    if v == 0:
+        checkZeros(k, b, r, c)
+    printBoard(k)
+    #Checks to see if you have won.
+    squaresLeft = 0
+    for x in range (0, 9):
+        row = k[x]
+        squaresLeft += row.count(' ')
+    if squaresLeft ==10:
+        printBoard(b)
+        print("You won :)")
+        quit()
+    play(b,k)
+    
+reset()
+    
